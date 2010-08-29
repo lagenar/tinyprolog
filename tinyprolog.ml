@@ -72,8 +72,18 @@ let unify t1 t2 =
     snd (unify [(t1, t2)] [])
 ;;    
 
-let unify pred1 pred2 = unify (Func pred1) (Func pred2);;
+let unify_predicates pred1 pred2 = unify (Func pred1) (Func pred2);;
 
 type database = clause list;;
 type goal = predicate list;;
 
+let rec matching_clause (db : database) start g =
+  match db with
+    | [] -> None
+    | (h, _)::tl -> 
+	try
+	  let (h', start') = copy_term start (Func h) in
+	  let subs = unify (Func g) h' in
+	    Some (subs, tl, start')
+	with Unify_error -> matching_clause tl start g
+;;
